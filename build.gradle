@@ -1,0 +1,21 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+version = '1.0.0'
+mainClassName = 'nl.esciencecenter.e3dchem.swagger.Rewriter'
+
+run {
+    if ( project.hasProperty("appArgs") ) {
+        args Eval.me(appArgs)
+    }
+}
+
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+dependencies {
+    compile 'io.swagger:swagger-compat-spec-parser:1.0.22'
+}
