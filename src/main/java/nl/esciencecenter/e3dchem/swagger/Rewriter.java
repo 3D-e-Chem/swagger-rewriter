@@ -27,26 +27,38 @@ public class Rewriter {
         String rewrites_fn = args[1];
         Yaml yaml = new Yaml();
         FileInputStream rewrites_stream = new FileInputStream(new File(rewrites_fn));
-        Map<String, List<String>> rewrites = (Map<String, List<String>>) yaml.load(rewrites_stream);
-        // rewrites is yaml file with rewrites
-        // responses2array:
-        // - /services/proteinfamily/
-        // Will change
-        // "type": "ProteinFamilySerializer"
-        // into
-        // "type": "array", "items": {"type": "ProteinFamilySerializer"}
+        Map<String, Object> rewrites = (Map<String, Object>) yaml.load(rewrites_stream);
 
-        rewrite_response2array(spec, rewrites);
+        if (rewrites.containsKey("response2array")) {
+            List<String> responses2array = (List<String>) rewrites.get("response2array");
+            rewrite_response2array(spec, responses2array);
+        }
+
+        // TODO set response type
+        // TODO set type of field
+        // TODO add definition
 
         try (PrintWriter out = new PrintWriter(args[2])) {
             out.print(Json.pretty(spec));
         }
     }
 
-    private static void rewrite_response2array(Swagger spec, Map<String, List<String>> rewrites) throws Exception {
-        List<String> responses2array = rewrites.get("responses2array");
-        for (String path_name : responses2array) {
-            System.out.println(path_name);
+    /**
+     * Wrap response type with array
+     *
+     * responses2array:
+     * - /services/proteinfamily/
+     * Will change
+     * "type": "ProteinFamilySerializer"
+     * into
+     * "type": "array", "items": {"type": "ProteinFamilySerializer"}
+     *
+     * @param spec
+     * @param rewrites
+     * @throws Exception
+     */
+    private static void rewrite_response2array(Swagger spec, List<String> rewrites) throws Exception {
+        for (String path_name : rewrites) {
             Path path = spec.getPath(path_name);
             if (path == null) {
                 throw new Exception("Path " + path_name + " not found");
